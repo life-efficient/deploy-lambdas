@@ -1,0 +1,23 @@
+project_name="ai-core" # ${PWD##*/}
+echo "Project name: ${project_name}"
+mkdir zips
+for F in $(ls)
+do
+	echo handling $F
+	if [[ $F == zips ]]
+	then
+		echo continuing	
+		continue
+	fi
+	fn="${project_name}-${F}" 
+	echo "Function name: ${fn}"
+	zip_out="zips/${fn}"
+	echo "zipping into ${zip_out}"
+	zip -r9j ${zip_out} "${F}"	# zip up out
+	aws lambda create-function --function-name $fn --runtime python3.7 --zip-file "fileb://${zip_out}.zip" --handler "lambda_function.lambda_handler" --role arn:aws:iam::251926666850:role/lambda_basic_execution \
+	|| \
+	echo create failed
+	aws lambda update-function-code --function-name $fn --zip-file "fileb://${zip_out}.zip"
+	#aws lambda 
+	echo
+done
